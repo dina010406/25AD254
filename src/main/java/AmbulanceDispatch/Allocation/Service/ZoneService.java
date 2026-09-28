@@ -23,6 +23,15 @@ public class ZoneService {
     public Zone addZone(Zone zone) {
         return zoneRepository.save(zone);
     }
+    public Zone updateZone(int id, Zone zone) {
+
+        Zone existingZone = zoneRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Zone not found"));
+
+        existingZone.setName(zone.getName());
+
+        return zoneRepository.save(existingZone);
+    }
 
     public List<Zone> getAllZones() {
         return zoneRepository.findAll();

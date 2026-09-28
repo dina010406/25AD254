@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>RapidAid · Dispatch Control</title>
+
+    <link rel="preconnect"
+          href="https://fonts.googleapis.com">
+
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;800&family=JetBrains+Mono:wght@500;700&display=swap"
+          rel="stylesheet">
+
+    <link rel="stylesheet"
+          href="style.css">
+
+</head>
+
+<body>
+
+<div class="app">
+
+    <!-- SIDEBAR -->
+
+    <aside class="sidebar">
+
+        <div class="brand">
+
+            <div class="brand-icon">✚</div>
+
+            <div>
+                <h2>RapidAid</h2>
+                <span>Dispatch control</span>
+            </div>
+
+        </div>
+
+        <nav>
+
+            <button class="nav-btn active"
+                    data-section="dashboard"
+                    onclick="showSection('dashboard')">
+                Dashboard
+            </button>
+
+            <button class="nav-btn"
+                    data-section="ambulances"
+                    onclick="showSection('ambulances')">
+                Ambulances
+            </button>
+
+            <button class="nav-btn"
+                    data-section="calls"
+                    onclick="showSection('calls')">
+                Emergency calls
+            </button>
+
+            <button class="nav-btn"
+                    data-section="zones"
+                    onclick="showSection('zones')">
+                Service areas
+            </button>
+
+        </nav>
+
+        <div class="system-status">
+
+            <span class="status-dot"></span>
+            System online
+
+            <br>
+
+            <small id="clock"></small>
+
+        </div>
+
+    </aside>
+
+
+    <!-- MAIN CONTENT -->
+
+    <main class="main">
+
+        <header class="topbar">
+
+            <div>
+
+                <h1 id="pageTitle">
+                    Dispatch dashboard
+                </h1>
+
+                <p>
+                    Ambulance allocation and emergency operations
+                </p>
+
+            </div>
+
+            <button class="refresh-btn"
+                    onclick="loadData()">
+                Refresh
+            </button>
+
+        </header>
+
+
+        <!-- DASHBOARD -->
+
+        <section id="dashboard"
+                 class="section active">
+
+            <div class="stats">
+
+                <div class="stat">
+
+                    <span>Total fleet</span>
+
+                    <strong id="totalAmbulances">
+                        0
+                    </strong>
+
+                </div>
+
+
+                <div class="stat ok">
+
+                    <span>Available</span>
+
+                    <strong id="availableAmbulances">
+                        0
+                    </strong>
+
+                </div>
+
+
+                <div class="stat bad">
+
+                    <span>Busy</span>
+
+                    <strong id="busyAmbulances">
+                        0
+                    </strong>
+
+                </div>
+
+
+                <div class="stat warn">
+
+                    <span>Pending calls</span>
+
+                    <strong id="pendingCalls">
+                        0
+                    </strong>
+
+                </div>
+
+            </div>
+
+
+            <!-- DISPATCH NETWORK -->
+
+            <div class="panel network-panel">
+
+                <div class="panel-header">
+
+                    <div>
+
+                        <h2>
+                            Dispatch network
+                        </h2>
+
+                        <p>
+                            Configured service zones, ambulance locations
+                            and zone distances
+                        </p>
+
+                    </div>
+
+                </div>
+
+                <svg id="networkMap"
+                     viewBox="0 0 640 340">
+                </svg>
+
+            </div>
+
+
+            <!-- DASHBOARD LISTS -->
+
+            <div class="dashboard-grid">
+
+                <div class="panel">
+
+                    <div class="panel-header">
+
+                        <h2>
+                            Fleet status
+                        </h2>
+
+                        <button class="small-btn"
+                                onclick="showSection('ambulances')">
+                            View fleet
+                        </button>
+
+                    </div>
+
+                    <div id="dashboardAmbulances"
+                         class="mini-list">
+                    </div>
+
+                </div>
+
+
+                <div class="panel">
+
+                    <div class="panel-header">
+
+                        <h2>
+                            Emergency queue
+                        </h2>
+
+                        <button class="small-btn"
+                                onclick="showSection('calls')">
+                            View calls
+                        </button>
+
+                    </div>
+
+                    <div id="dashboardCalls"
+                         class="mini-list">
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- AMBULANCES -->
+
+        <section id="ambulances"
+                 class="section">
+
+            <div class="form-panel">
+
+                <h3>
+                    Register ambulance
+                </h3>
+
+                <div class="form-row">
+
+                    <input id="vehicleNumber"
+                           placeholder="Vehicle number, e.g. AMB-108">
+
+
+                    <select id="ambulanceZone">
+
+                        <option value="">
+                            Home area
+                        </option>
+
+                    </select>
+
+
+                    <select id="ambulanceStatus">
+
+                        <option value="AVAILABLE">
+                            AVAILABLE
+                        </option>
+
+                        <option value="BUSY">
+                            BUSY
+                        </option>
+
+                    </select>
+
+
+                    <button onclick="addAmbulance()"
+                            class="primary-btn">
+                        Add ambulance
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <div id="ambulanceList"
+                 class="card-grid">
+            </div>
+
+        </section>
+
+
+        <!-- EMERGENCY CALLS -->
+
+        <section id="calls"
+                 class="section">
+
+            <div class="form-panel">
+
+                <h3>
+                    Register emergency call
+                </h3>
+
+                <div class="form-row">
+
+                    <input id="callerName"
+                           placeholder="Caller name">
+
+
+                    <input id="phoneNumber"
+                           placeholder="Phone number">
+
+
+                    <select id="callerZone">
+
+                        <option value="">
+                            Caller location
+                        </option>
+
+                    </select>
+
+
+                    <button onclick="addCall()"
+                            class="danger-btn">
+                        Create call
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <div id="callList"
+                 class="card-grid">
+            </div>
+
+        </section>
+
+
+        <!-- SERVICE AREAS -->
+
+        <section id="zones"
+                 class="section">
+
+            <div class="form-panel">
+
+                <h3>
+                    Add service area
+                </h3>
+
+                <div class="form-row">
+
+                    <input id="zoneName"
+                           placeholder="Area name">
+
+
+                    <input id="zoneId"
+                           type="number"
+                           placeholder="Area ID">
+
+
+                    <button onclick="addZone()"
+                            class="primary-btn">
+                        Add area
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <div id="zoneList"
+                 class="card-grid">
+            </div>
+
+        </section>
+
+    </main>
+
+</div>
+
+
+<div id="toast"
+     class="toast">
+</div>
+
+
+<script src="script.js"></script>
+
+</body>
+
+</html>

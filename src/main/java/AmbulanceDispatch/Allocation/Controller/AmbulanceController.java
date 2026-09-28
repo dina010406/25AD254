@@ -25,4 +25,9 @@ public class AmbulanceController {
     public List<Ambulance> getAllAmbulances() {
         return service.getAllAmbulances();
     }
+    @PutMapping("/{id}")
+    public Ambulance updateAmbulance(@PathVariable int id,
+                                     @RequestBody Ambulance ambulance) {
+        return service.updateAmbulance(id, ambulance);
+    }
 }

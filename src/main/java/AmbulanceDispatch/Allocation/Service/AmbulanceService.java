@@ -43,4 +43,24 @@ public class AmbulanceService {
     public List<Ambulance> getAllAmbulances() {
         return ambulanceRepository.findAll();
     }
+
+    public Ambulance updateAmbulance(int id, Ambulance ambulance) {
+
+        Ambulance existing = ambulanceRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Ambulance not found"));
+
+        if (!ambulance.getStatus().equals("AVAILABLE") &&
+                !ambulance.getStatus().equals("BUSY")) {
+            throw new RuntimeException("Status must be AVAILABLE or BUSY");
+        }
+
+        Zone zone = zoneRepository.findById(ambulance.getHomeZone().getId())
+                .orElseThrow(() -> new RuntimeException("Home zone not found"));
+
+        existing.setVehicleNumber(ambulance.getVehicleNumber());
+        existing.setHomeZone(zone);
+        existing.setStatus(ambulance.getStatus());
+
+        return ambulanceRepository.save(existing);
+    }
 }
