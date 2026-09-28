@@ -1,0 +1,18 @@
+# IntelliJ IDEA
+.idea/
+*.iml
+
+# Maven
+target/
+
+# Compiled files
+*.class
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+# Spring Boot configuration
+src/main/resources/application.properties
