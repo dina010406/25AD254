@@ -8,9 +8,9 @@ let distances = [];
 const $ = id => document.getElementById(id);
 
 
-/* =========================
+/* =====================================================
    LOAD BACKEND DATA
-   ========================= */
+   ===================================================== */
 
 async function loadData(silent = false) {
 
@@ -50,9 +50,9 @@ async function loadData(silent = false) {
 }
 
 
-/* =========================
+/* =====================================================
    RENDER EVERYTHING
-   ========================= */
+   ===================================================== */
 
 function renderAll() {
 
@@ -69,12 +69,16 @@ function renderAll() {
     renderDropdowns();
 
     renderDashboard();
+
+    updateCounts();
+
+    handleGlobalSearch();
 }
 
 
-/* =========================
+/* =====================================================
    DASHBOARD STATISTICS
-   ========================= */
+   ===================================================== */
 
 function renderStats() {
 
@@ -98,9 +102,9 @@ function renderStats() {
 }
 
 
-/* =========================
-   ZONE NAME
-   ========================= */
+/* =====================================================
+   AREA / ZONE NAME
+   ===================================================== */
 
 function area(zone) {
 
@@ -112,13 +116,17 @@ function area(zone) {
 }
 
 
-/* =========================
+/* =====================================================
    DISPATCH NETWORK
-   ========================= */
+   ===================================================== */
 
 function renderMap() {
 
     const svg = $("networkMap");
+
+    if (!svg) {
+        return;
+    }
 
     if (!zones.length) {
 
@@ -128,7 +136,9 @@ function renderMap() {
                 y="170"
                 fill="#8393b2"
                 text-anchor="middle">
+
                 No service areas configured
+
             </text>
         `;
 
@@ -141,12 +151,6 @@ function renderMap() {
     const count = zones.length;
 
 
-    /*
-       Arrange zones around the network.
-       This is a visual representation,
-       not a GPS map.
-    */
-
     zones.forEach((zone, index) => {
 
         const angle =
@@ -155,9 +159,15 @@ function renderMap() {
 
         positions[zone.id] = {
 
-            x: 320 + 235 * Math.cos(angle),
+            x:
+                320 +
+                235 *
+                Math.cos(angle),
 
-            y: 170 + 115 * Math.sin(angle)
+            y:
+                170 +
+                115 *
+                Math.sin(angle)
 
         };
 
@@ -166,7 +176,8 @@ function renderMap() {
 
     let output = "";
 
-    const seenConnections = new Set();
+    const seenConnections =
+        new Set();
 
 
     /* DRAW DISTANCE CONNECTIONS */
@@ -194,8 +205,11 @@ function renderMap() {
 
 
         const key = [
+
             distance.fromZone.id,
+
             distance.toZone.id
+
         ]
             .sort()
             .join("-");
@@ -212,13 +226,21 @@ function renderMap() {
         output += `
 
             <line
+
                 x1="${from.x}"
+
                 y1="${from.y}"
+
                 x2="${to.x}"
+
                 y2="${to.y}"
+
                 stroke="#2a4068"
+
                 stroke-width="1.5"
+
                 stroke-dasharray="4 5">
+
             </line>
 
         `;
@@ -227,11 +249,17 @@ function renderMap() {
         output += `
 
             <text
+
                 x="${(from.x + to.x) / 2}"
+
                 y="${(from.y + to.y) / 2 - 5}"
+
                 fill="#6f82a5"
+
                 font-size="10"
+
                 text-anchor="middle"
+
                 font-family="JetBrains Mono">
 
                 ${distance.distance} km
@@ -259,18 +287,22 @@ function renderMap() {
             ).length;
 
 
-        /* Pending call indicator */
-
         if (pendingCalls > 0) {
 
             output += `
 
                 <circle
+
                     class="pulse"
+
                     cx="${position.x}"
+
                     cy="${position.y}"
+
                     r="22"
+
                     fill="#fbbf24">
+
                 </circle>
 
             `;
@@ -278,23 +310,26 @@ function renderMap() {
         }
 
 
-        /* Zone */
-
         output += `
 
             <circle
+
                 cx="${position.x}"
+
                 cy="${position.y}"
+
                 r="22"
+
                 fill="#0d1629"
+
                 stroke="${pendingCalls ? "#fbbf24" : "#4a6fa5"}"
+
                 stroke-width="2">
+
             </circle>
 
         `;
 
-
-        /* Ambulances in zone */
 
         const zoneAmbulances =
             ambulances.filter(
@@ -309,7 +344,10 @@ function renderMap() {
 
                 const angle =
                     (Math.PI * 2 * index) /
-                    Math.max(zoneAmbulances.length, 3)
+                    Math.max(
+                        zoneAmbulances.length,
+                        3
+                    )
                     - Math.PI / 2;
 
 
@@ -322,10 +360,23 @@ function renderMap() {
                 output += `
 
                     <circle
-                        cx="${position.x + 10 * Math.cos(angle)}"
-                        cy="${position.y + 10 * Math.sin(angle)}"
+
+                        cx="${
+                    position.x +
+                    10 *
+                    Math.cos(angle)
+                }"
+
+                        cy="${
+                    position.y +
+                    10 *
+                    Math.sin(angle)
+                }"
+
                         r="4"
+
                         fill="${color}">
+
                     </circle>
 
                 `;
@@ -333,17 +384,22 @@ function renderMap() {
             });
 
 
-        /* Zone name */
-
         output += `
 
             <text
+
                 x="${position.x}"
+
                 y="${position.y + 40}"
+
                 fill="#e8edf7"
+
                 font-size="12"
+
                 font-weight="700"
+
                 text-anchor="middle"
+
                 font-family="Manrope">
 
                 ${area(zone)}
@@ -359,16 +415,20 @@ function renderMap() {
 }
 
 
-/* =========================
+/* =====================================================
    STATUS BADGE
-   ========================= */
+   ===================================================== */
 
 function badge(status) {
 
     return `
+
         <span class="badge ${status.toLowerCase()}">
+
             ${status}
+
         </span>
+
     `;
 }
 
@@ -376,58 +436,79 @@ function badge(status) {
 function empty(message) {
 
     return `
+
         <p style="color:#8393b2">
+
             ${message}
+
         </p>
+
     `;
 }
 
 
-/* =========================
+/* =====================================================
    AMBULANCE LIST
-   ========================= */
+   ===================================================== */
 
 function renderAmbulances() {
 
-    $("ambulanceList").innerHTML =
+    const container =
+        $("ambulanceList");
+
+    if (!container) {
+        return;
+    }
+
+
+    container.innerHTML =
+
         ambulances.length
 
             ?
 
-            ambulances.map(ambulance => `
+            ambulances.map(
+                ambulance => `
 
-            <div class="card ${ambulance.status.toLowerCase()}">
+                <div class="card ${ambulance.status.toLowerCase()}">
 
-                <div class="card-top">
+                    <div class="card-top">
 
-                    <span class="plate">
-                        ${ambulance.vehicleNumber}
-                    </span>
+                        <span class="plate">
 
-                    ${badge(ambulance.status)}
+                            ${ambulance.vehicleNumber}
+
+                        </span>
+
+                        ${badge(ambulance.status)}
+
+                    </div>
+
+
+                    <div class="card-info">
+
+                        Based in
+
+                        <b>
+                            ${area(ambulance.homeZone)}
+                        </b>
+
+                        <br>
+
+                        Vehicle ID
+
+                        <b class="mono">
+
+                            #${ambulance.id}
+
+                        </b>
+
+                    </div>
 
                 </div>
 
-
-                <div class="card-info">
-
-                    Based in
-                    <b>
-                        ${area(ambulance.homeZone)}
-                    </b>
-
-                    <br>
-
-                    Vehicle ID
-                    <b class="mono">
-                        #${ambulance.id}
-                    </b>
-
-                </div>
-
-            </div>
-
-        `).join("")
+            `
+            ).join("")
 
             :
 
@@ -437,13 +518,21 @@ function renderAmbulances() {
 }
 
 
-/* =========================
+/* =====================================================
    EMERGENCY CALLS
-   ========================= */
+   ===================================================== */
 
 function renderCalls() {
 
-    $("callList").innerHTML =
+    const container =
+        $("callList");
+
+    if (!container) {
+        return;
+    }
+
+
+    container.innerHTML =
 
         calls.length
 
@@ -456,7 +545,10 @@ function renderCalls() {
 
                     const ambulance =
                         call.assignedAmbulance
-                            ? call.assignedAmbulance.vehicleNumber
+
+                            ? call.assignedAmbulance
+                                .vehicleNumber
+
                             : "Not assigned";
 
 
@@ -465,38 +557,48 @@ function renderCalls() {
 
                     /* PENDING */
 
-                    if (call.status === "PENDING") {
+                    if (
+                        call.status ===
+                        "PENDING"
+                    ) {
 
                         action = `
 
-                        <button
-                            class="card-action assign"
-                            onclick="assignCall(${call.id})">
+                            <button
 
-                            Assign nearest ambulance
+                                class="card-action assign"
 
-                        </button>
+                                onclick="assignCall(${call.id})">
 
-                    `;
+                                Assign nearest ambulance
+
+                            </button>
+
+                        `;
 
                     }
 
 
                     /* ASSIGNED */
 
-                    else if (call.status === "ASSIGNED") {
+                    else if (
+                        call.status ===
+                        "ASSIGNED"
+                    ) {
 
                         action = `
 
-                        <button
-                            class="card-action complete"
-                            onclick="completeCall(${call.id})">
+                            <button
 
-                            Mark complete
+                                class="card-action complete"
 
-                        </button>
+                                onclick="completeCall(${call.id})">
 
-                    `;
+                                Mark complete
+
+                            </button>
+
+                        `;
 
                     }
 
@@ -508,10 +610,15 @@ function renderCalls() {
                         <div class="card-top">
 
                             <strong>
+
                                 Emergency
+
                                 <span class="mono">
+
                                     #${call.id}
+
                                 </span>
+
                             </strong>
 
                             ${badge(call.status)}
@@ -522,6 +629,7 @@ function renderCalls() {
                         <div class="card-info">
 
                             Caller
+
                             <b>
                                 ${call.callerName}
                             </b>
@@ -529,22 +637,31 @@ function renderCalls() {
                             <br>
 
                             Phone
+
                             <b class="mono">
+
                                 ${call.phoneNumber}
+
                             </b>
 
                             <br>
 
                             Location
+
                             <b>
+
                                 ${area(call.callerZone)}
+
                             </b>
 
                             <br>
 
                             Ambulance
+
                             <b>
+
                                 ${ambulance}
+
                             </b>
 
                         </div>
@@ -554,7 +671,7 @@ function renderCalls() {
 
                     </div>
 
-                `;
+                    `;
 
                 })
                 .join("")
@@ -567,13 +684,21 @@ function renderCalls() {
 }
 
 
-/* =========================
+/* =====================================================
    SERVICE AREAS
-   ========================= */
+   ===================================================== */
 
 function renderZones() {
 
-    $("zoneList").innerHTML =
+    const container =
+        $("zoneList");
+
+    if (!container) {
+        return;
+    }
+
+
+    container.innerHTML =
 
         zones.length
 
@@ -597,16 +722,25 @@ function renderZones() {
                         ?
 
                         connections
-                            .map(distance => `
+                            .map(
+                                distance => `
 
-                        <div>
-                            ${area(distance.toZone)}
-                            <b class="mono">
-                                ${distance.distance} km
-                            </b>
-                        </div>
+                                <div>
 
-                    `)
+                                    ${area(
+                                    distance.toZone
+                                )}
+
+                                    <b class="mono">
+
+                                        ${distance.distance} km
+
+                                    </b>
+
+                                </div>
+
+                            `
+                            )
                             .join("")
 
                         :
@@ -628,11 +762,16 @@ function renderZones() {
                     <div class="card-top">
 
                         <span class="plate">
+
                             ${area(zone)}
+
                         </span>
 
                         <span class="badge assigned">
-                            ${ambulanceCount} vehicles
+
+                            ${ambulanceCount}
+                            vehicles
+
                         </span>
 
                     </div>
@@ -646,7 +785,7 @@ function renderZones() {
 
                 </div>
 
-            `;
+                `;
 
             }).join("")
 
@@ -658,27 +797,46 @@ function renderZones() {
 }
 
 
-/* =========================
+/* =====================================================
    ZONE DROPDOWNS
-   ========================= */
+   ===================================================== */
 
 function renderDropdowns() {
 
-    const options = zones
-        .map(zone => `
+    const ambulanceZone =
+        $("ambulanceZone");
 
-            <option value="${zone.id}">
-                ${area(zone)}
-            </option>
-
-        `)
-        .join("");
+    const callerZone =
+        $("callerZone");
 
 
-    $("ambulanceZone").innerHTML = `
+    if (!ambulanceZone || !callerZone) {
+        return;
+    }
+
+
+    const options =
+        zones
+            .map(
+                zone => `
+
+                <option value="${zone.id}">
+
+                    ${area(zone)}
+
+                </option>
+
+            `
+            )
+            .join("");
+
+
+    ambulanceZone.innerHTML = `
 
         <option value="">
+
             Home area
+
         </option>
 
         ${options}
@@ -686,10 +844,12 @@ function renderDropdowns() {
     `;
 
 
-    $("callerZone").innerHTML = `
+    callerZone.innerHTML = `
 
         <option value="">
+
             Caller location
+
         </option>
 
         ${options}
@@ -698,13 +858,27 @@ function renderDropdowns() {
 }
 
 
-/* =========================
+/* =====================================================
    DASHBOARD FLEET
-   ========================= */
+   ===================================================== */
 
 function renderDashboard() {
 
-    $("dashboardAmbulances").innerHTML =
+    const dashboardAmbulances =
+        $("dashboardAmbulances");
+
+    const dashboardCalls =
+        $("dashboardCalls");
+
+
+    if (!dashboardAmbulances ||
+        !dashboardCalls) {
+
+        return;
+    }
+
+
+    dashboardAmbulances.innerHTML =
 
         ambulances.length
 
@@ -712,29 +886,39 @@ function renderDashboard() {
 
             ambulances
                 .slice(0, 6)
-                .map(ambulance => `
+                .map(
+                    ambulance => `
 
-                <div class="mini-item">
+                    <div class="mini-item">
 
-                    <div>
+                        <div>
 
-                        <strong class="mono">
-                            ${ambulance.vehicleNumber}
-                        </strong>
+                            <strong class="mono">
 
-                        <br>
+                                ${ambulance.vehicleNumber}
 
-                        <small>
-                            ${area(ambulance.homeZone)}
-                        </small>
+                            </strong>
+
+                            <br>
+
+                            <small>
+
+                                ${area(
+                        ambulance.homeZone
+                    )}
+
+                            </small>
+
+                        </div>
+
+                        ${badge(
+                        ambulance.status
+                    )}
 
                     </div>
 
-                    ${badge(ambulance.status)}
-
-                </div>
-
-            `)
+                `
+                )
                 .join("")
 
             :
@@ -744,7 +928,7 @@ function renderDashboard() {
             );
 
 
-    $("dashboardCalls").innerHTML =
+    dashboardCalls.innerHTML =
 
         calls.length
 
@@ -754,29 +938,39 @@ function renderDashboard() {
                 .slice()
                 .reverse()
                 .slice(0, 5)
-                .map(call => `
+                .map(
+                    call => `
 
-                <div class="mini-item">
+                    <div class="mini-item">
 
-                    <div>
+                        <div>
 
-                        <strong>
-                            ${call.callerName}
-                        </strong>
+                            <strong>
 
-                        <br>
+                                ${call.callerName}
 
-                        <small>
-                            ${area(call.callerZone)}
-                        </small>
+                            </strong>
+
+                            <br>
+
+                            <small>
+
+                                ${area(
+                        call.callerZone
+                    )}
+
+                            </small>
+
+                        </div>
+
+                        ${badge(
+                        call.status
+                    )}
 
                     </div>
 
-                    ${badge(call.status)}
-
-                </div>
-
-            `)
+                `
+                )
                 .join("")
 
             :
@@ -787,9 +981,533 @@ function renderDashboard() {
 }
 
 
-/* =========================
+/* =====================================================
+   COLLAPSIBLE PANELS
+   ===================================================== */
+
+function togglePanel(id, button) {
+
+    const panel =
+        $(id);
+
+    if (!panel) {
+        return;
+    }
+
+
+    const isOpen =
+        panel.classList.contains("open");
+
+
+    if (isOpen) {
+
+        panel.classList.remove("open");
+
+        button.classList.remove("open");
+
+    } else {
+
+        panel.classList.add("open");
+
+        button.classList.add("open");
+
+    }
+}
+
+
+/* =====================================================
+   SECTION COUNTS
+   ===================================================== */
+
+function updateCounts() {
+
+    const ambulanceCount =
+        $("ambulanceCount");
+
+    const callCount =
+        $("callCount");
+
+    const zoneCount =
+        $("zoneCount");
+
+
+    if (ambulanceCount) {
+
+        ambulanceCount.textContent =
+            `${ambulances.length} total`;
+
+    }
+
+
+    if (callCount) {
+
+        callCount.textContent =
+            `${calls.length} total`;
+
+    }
+
+
+    if (zoneCount) {
+
+        zoneCount.textContent =
+            `${zones.length} areas`;
+
+    }
+}
+
+
+/* =====================================================
+   GLOBAL SEARCH
+   ===================================================== */
+
+function handleGlobalSearch() {
+
+    const input =
+        $("globalSearch");
+
+    const resultsBox =
+        $("searchResults");
+
+
+    if (!input || !resultsBox) {
+        return;
+    }
+
+
+    const query =
+        input.value
+            .trim()
+            .toLowerCase();
+
+
+    if (!query) {
+
+        resultsBox.innerHTML = "";
+
+        resultsBox.classList.remove(
+            "show"
+        );
+
+        window.currentSearchResults = [];
+
+        return;
+    }
+
+
+    const results = [];
+
+
+    /* ---------------------------------------------
+       SEARCH AMBULANCES
+       --------------------------------------------- */
+
+    ambulances.forEach(
+        (ambulance, index) => {
+
+            const vehicle =
+                ambulance.vehicleNumber
+                    ?.toLowerCase() || "";
+
+
+            const status =
+                ambulance.status
+                    ?.toLowerCase() || "";
+
+
+            const zone =
+                area(ambulance.homeZone)
+                    .toLowerCase();
+
+
+            if (
+                vehicle.includes(query) ||
+                status.includes(query) ||
+                zone.includes(query)
+            ) {
+
+                results.push({
+
+                    type:
+                        "Ambulance",
+
+                    title:
+                    ambulance.vehicleNumber,
+
+                    info:
+                        `${area(
+                            ambulance.homeZone
+                        )} • ${
+                            ambulance.status
+                        }`,
+
+                    section:
+                        "ambulances",
+
+                    index:
+                    index
+
+                });
+
+            }
+
+        }
+    );
+
+
+    /* ---------------------------------------------
+       SEARCH EMERGENCY CALLS
+       --------------------------------------------- */
+
+    calls.forEach(
+        (call, index) => {
+
+            const caller =
+                call.callerName
+                    ?.toLowerCase() || "";
+
+
+            const phone =
+                call.phoneNumber
+                    ?.toLowerCase() || "";
+
+
+            const status =
+                call.status
+                    ?.toLowerCase() || "";
+
+
+            const zone =
+                area(call.callerZone)
+                    .toLowerCase();
+
+
+            if (
+                caller.includes(query) ||
+                phone.includes(query) ||
+                status.includes(query) ||
+                zone.includes(query)
+            ) {
+
+                results.push({
+
+                    type:
+                        "Emergency Call",
+
+                    title:
+                        `${call.callerName} #${call.id}`,
+
+                    info:
+                        `${area(
+                            call.callerZone
+                        )} • ${
+                            call.status
+                        }`,
+
+                    section:
+                        "calls",
+
+                    index:
+                    index
+
+                });
+
+            }
+
+        }
+    );
+
+
+    /* ---------------------------------------------
+       SEARCH SERVICE AREAS
+       --------------------------------------------- */
+
+    zones.forEach(
+        (zone, index) => {
+
+            const name =
+                area(zone)
+                    .toLowerCase();
+
+
+            if (
+                name.includes(query)
+            ) {
+
+                results.push({
+
+                    type:
+                        "Service Area",
+
+                    title:
+                        area(zone),
+
+                    info:
+                        `Zone ID ${zone.id}`,
+
+                    section:
+                        "zones",
+
+                    index:
+                    index
+
+                });
+
+            }
+
+        }
+    );
+
+
+    /* ---------------------------------------------
+       LIMIT RESULTS
+       --------------------------------------------- */
+
+    const visibleResults =
+        results.slice(0, 8);
+
+
+    window.currentSearchResults =
+        visibleResults;
+
+
+    if (!visibleResults.length) {
+
+        resultsBox.innerHTML = `
+
+            <div class="search-empty">
+
+                No matching records found
+
+            </div>
+
+        `;
+
+        resultsBox.classList.add(
+            "show"
+        );
+
+        return;
+    }
+
+
+    resultsBox.innerHTML =
+        visibleResults
+            .map(
+                (result, resultIndex) => `
+
+                <button
+
+                    class="search-result"
+
+                    onclick="
+                        openSearchResult(
+                            ${resultIndex}
+                        )
+                    ">
+
+                    <span class="search-result-type">
+
+                        ${result.type}
+
+                    </span>
+
+                    <strong>
+
+                        ${result.title}
+
+                    </strong>
+
+                    <small>
+
+                        ${result.info}
+
+                    </small>
+
+                </button>
+
+            `
+            )
+            .join("");
+
+
+    resultsBox.classList.add(
+        "show"
+    );
+}
+
+
+/* =====================================================
+   OPEN SEARCH RESULT
+   ===================================================== */
+
+function openSearchResult(
+    resultIndex
+) {
+
+    const result =
+        window.currentSearchResults?.[
+            resultIndex
+            ];
+
+
+    if (!result) {
+        return;
+    }
+
+
+    showSection(
+        result.section
+    );
+
+
+    const resultsBox =
+        $("searchResults");
+
+    resultsBox.classList.remove(
+        "show"
+    );
+
+
+    $("globalSearch").value = "";
+
+
+    setTimeout(() => {
+
+        const containerMap = {
+
+            ambulances:
+                "ambulanceList",
+
+            calls:
+                "callList",
+
+            zones:
+                "zoneList"
+
+        };
+
+
+        const container =
+            $(
+                containerMap[
+                    result.section
+                    ]
+            );
+
+
+        if (!container) {
+            return;
+        }
+
+
+        const cards =
+            container.querySelectorAll(
+                ".card"
+            );
+
+
+        let cardIndex =
+            result.index;
+
+
+        /*
+           Calls are displayed in reverse
+           order, so we adjust the index.
+        */
+
+        if (
+            result.section ===
+            "calls"
+        ) {
+
+            cardIndex =
+                calls.length -
+                1 -
+                result.index;
+
+        }
+
+
+        const card =
+            cards[cardIndex];
+
+
+        if (!card) {
+            return;
+        }
+
+
+        card.scrollIntoView({
+
+            behavior:
+                "smooth",
+
+            block:
+                "center"
+
+        });
+
+
+        card.classList.add(
+            "search-highlight"
+        );
+
+
+        setTimeout(
+            () => {
+
+                card.classList.remove(
+                    "search-highlight"
+                );
+
+            },
+
+            2200
+        );
+
+
+    }, 100);
+}
+
+
+/* =====================================================
+   CLEAR SEARCH
+   ===================================================== */
+
+function clearGlobalSearch() {
+
+    const input =
+        $("globalSearch");
+
+    const resultsBox =
+        $("searchResults");
+
+
+    if (input) {
+
+        input.value = "";
+
+    }
+
+
+    if (resultsBox) {
+
+        resultsBox.innerHTML = "";
+
+        resultsBox.classList.remove(
+            "show"
+        );
+
+    }
+
+
+    window.currentSearchResults = [];
+}
+
+
+/* =====================================================
    SEND REQUEST TO BACKEND
-   ========================= */
+   ===================================================== */
 
 async function send(
     url,
@@ -802,21 +1520,27 @@ async function send(
     try {
 
         const response =
-            await fetch(url, {
+            await fetch(
+                url,
+                {
 
-                method: method,
+                    method:
+                    method,
 
-                headers: {
-                    "Content-Type":
-                        "application/json"
-                },
+                    headers: {
 
-                body:
-                    body
-                        ? JSON.stringify(body)
-                        : null
+                        "Content-Type":
+                            "application/json"
 
-            });
+                    },
+
+                    body:
+                        body
+                            ? JSON.stringify(body)
+                            : null
+
+                }
+            );
 
 
         const message =
@@ -826,7 +1550,8 @@ async function send(
         if (!response.ok) {
 
             showToast(
-                message || failureMessage
+                message ||
+                failureMessage
             );
 
             return false;
@@ -834,7 +1559,8 @@ async function send(
 
 
         showToast(
-            successMessage || message
+            successMessage ||
+            message
         );
 
 
@@ -857,9 +1583,9 @@ async function send(
 }
 
 
-/* =========================
+/* =====================================================
    ADD AMBULANCE
-   ========================= */
+   ===================================================== */
 
 async function addAmbulance() {
 
@@ -897,13 +1623,20 @@ async function addAmbulance() {
             "POST",
 
             {
-                vehicleNumber: vehicle,
+
+                vehicleNumber:
+                vehicle,
 
                 homeZone: {
-                    id: Number(zone)
+
+                    id:
+                        Number(zone)
+
                 },
 
-                status: status
+                status:
+                status
+
             },
 
             "Ambulance registered",
@@ -915,15 +1648,16 @@ async function addAmbulance() {
 
     if (success) {
 
-        $("vehicleNumber").value = "";
+        $("vehicleNumber")
+            .value = "";
 
     }
 }
 
 
-/* =========================
+/* =====================================================
    CREATE EMERGENCY CALL
-   ========================= */
+   ===================================================== */
 
 async function addCall() {
 
@@ -944,7 +1678,11 @@ async function addCall() {
             .value;
 
 
-    if (!caller || !phone || !zone) {
+    if (
+        !caller ||
+        !phone ||
+        !zone
+    ) {
 
         showToast(
             "Complete all emergency call details"
@@ -962,13 +1700,20 @@ async function addCall() {
             "POST",
 
             {
-                callerName: caller,
 
-                phoneNumber: phone,
+                callerName:
+                caller,
+
+                phoneNumber:
+                phone,
 
                 callerZone: {
-                    id: Number(zone)
+
+                    id:
+                        Number(zone)
+
                 }
+
             },
 
             "Emergency call registered",
@@ -980,17 +1725,19 @@ async function addCall() {
 
     if (success) {
 
-        $("callerName").value = "";
+        $("callerName")
+            .value = "";
 
-        $("phoneNumber").value = "";
+        $("phoneNumber")
+            .value = "";
 
     }
 }
 
 
-/* =========================
+/* =====================================================
    ASSIGN NEAREST AMBULANCE
-   ========================= */
+   ===================================================== */
 
 function assignCall(id) {
 
@@ -1010,9 +1757,9 @@ function assignCall(id) {
 }
 
 
-/* =========================
+/* =====================================================
    COMPLETE EMERGENCY CALL
-   ========================= */
+   ===================================================== */
 
 function completeCall(id) {
 
@@ -1032,9 +1779,9 @@ function completeCall(id) {
 }
 
 
-/* =========================
+/* =====================================================
    ADD SERVICE AREA
-   ========================= */
+   ===================================================== */
 
 async function addZone() {
 
@@ -1067,9 +1814,13 @@ async function addZone() {
             "POST",
 
             {
-                id: Number(id),
 
-                name: name
+                id:
+                    Number(id),
+
+                name:
+                name
+
             },
 
             "Service area added",
@@ -1081,45 +1832,64 @@ async function addZone() {
 
     if (success) {
 
-        $("zoneName").value = "";
+        $("zoneName")
+            .value = "";
 
-        $("zoneId").value = "";
+        $("zoneId")
+            .value = "";
 
     }
 }
 
 
-/* =========================
+/* =====================================================
    NAVIGATION
-   ========================= */
+   ===================================================== */
 
 function showSection(id) {
 
     document
         .querySelectorAll(".section")
-        .forEach(section => {
+        .forEach(
+            section => {
 
-            section.classList.remove("active");
+                section.classList.remove(
+                    "active"
+                );
 
-        });
+            }
+        );
 
 
-    $(id).classList.add("active");
+    const selected =
+        $(id);
+
+
+    if (!selected) {
+        return;
+    }
+
+
+    selected.classList.add(
+        "active"
+    );
 
 
     document
         .querySelectorAll(".nav-btn")
-        .forEach(button => {
+        .forEach(
+            button => {
 
-            button.classList.toggle(
+                button.classList.toggle(
 
-                "active",
+                    "active",
 
-                button.dataset.section === id
+                    button.dataset.section === id
 
-            );
+                );
 
-        });
+            }
+        );
 
 
     const titles = {
@@ -1144,9 +1914,9 @@ function showSection(id) {
 }
 
 
-/* =========================
+/* =====================================================
    TOAST MESSAGE
-   ========================= */
+   ===================================================== */
 
 let toastTimer;
 
@@ -1155,6 +1925,11 @@ function showToast(message) {
 
     const toast =
         $("toast");
+
+
+    if (!toast) {
+        return;
+    }
 
 
     toast.textContent =
@@ -1186,20 +1961,33 @@ function showToast(message) {
 }
 
 
-/* =========================
+/* =====================================================
    CLOCK
-   ========================= */
+   ===================================================== */
 
-setInterval(() => {
+setInterval(
+    () => {
 
-    $("clock").textContent =
-        new Date().toLocaleTimeString();
-
-}, 1000);
+        const clock =
+            $("clock");
 
 
-/* =========================
+        if (clock) {
+
+            clock.textContent =
+                new Date()
+                    .toLocaleTimeString();
+
+        }
+
+    },
+
+    1000
+);
+
+
+/* =====================================================
    INITIAL LOAD
-   ========================= */
+   ===================================================== */
 
 loadData(true);
